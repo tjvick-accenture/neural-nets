@@ -1,23 +1,36 @@
 defmodule Matrix do
-  def multiply(w, x) do
-    xt = transpose(x)
-
-    yT = Enum.map(xt, fn(xi) -> multiply_matrix_by_vector(w, xi) end)
-
-    transpose(yT)
+  def add(a, b) do
+    Enum.zip(a, b)
+    |> Enum.map(&sum_tuple_of_vectors/1)
   end
 
-  defp multiply_matrix_by_vector(w, v) do
-    Enum.map(w, fn(wi) -> vector_dot(wi, v) end)
+  defp sum_tuple_of_vectors({a, b}) do
+    Enum.zip(a, b)
+    |> Enum.map(&sum_tuple/1)
+  end
+
+  defp sum_tuple({a, b}) do
+    a + b
+  end
+
+  def multiply(a, b) do
+    transpose(b)
+    |> Enum.map(&multiply_matrix_by_vector(a, &1))
+    |> transpose
+  end
+
+  defp multiply_matrix_by_vector(m, v) do
+    Enum.map(m, &vector_dot(&1, v))
   end
 
   defp vector_dot(a, b) do
     Enum.zip(a, b)
     |> Enum.map(fn {ai, bi} -> ai * bi end)
-    |> Enum.reduce(0, fn x, acc -> x + acc end)
+    |> Enum.sum()
   end
 
   def transpose(x) do
-    Enum.map(List.zip(x), &Tuple.to_list(&1))
+    List.zip(x)
+    |> Enum.map(&Tuple.to_list(&1))
   end
 end

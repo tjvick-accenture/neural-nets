@@ -1,18 +1,21 @@
 defmodule ENN do
-  @moduledoc """
-  Documentation for `ENN`.
-  """
+  require Logger
 
-  @doc """
-  Hello world.
+  def step_function(x) when x >= 0 do
+    1.0
+  end
 
-  ## Examples
+  def step_function(_x) do
+    0.0
+  end
 
-      iex> ENN.hello()
-      :world
+  def apply_activation_function([x], activation_function \\ &step_function/1) do
+    Enum.map(x, &activation_function.(&1))
+  end
 
-  """
-  def hello do
-    :world
+  def perceptron_output(weights, bias, input) do
+    Matrix.multiply(weights, input)
+    |> Matrix.add(bias)
+    |> apply_activation_function
   end
 end
