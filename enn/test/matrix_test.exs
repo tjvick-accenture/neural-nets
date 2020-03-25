@@ -172,4 +172,23 @@ defmodule MatrixTest do
              ]
     end
   end
+
+  describe "Matrix.matrix/1" do
+    test "Converts a single integer to a matrix" do
+      assert Matrix.matrix(1) == [[1]]
+    end
+
+    test "Converts a single float to a matrix" do
+      assert Matrix.matrix(1.0) === [[1.0]]
+    end
+
+    test "Converts a list to a matrix" do
+      assert Matrix.matrix([1, 2, 3]) === [[1, 2, 3]]
+    end
+
+    test "Does not modify a list of lists" do
+      a = [[1, 2, 3], [4, 5, 6]]
+      assert Matrix.matrix(a) === a
+    end
+  end
 end

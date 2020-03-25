@@ -33,4 +33,16 @@ defmodule Matrix do
     List.zip(x)
     |> Enum.map(&Tuple.to_list(&1))
   end
+
+  def matrix(x) when is_integer(x) or is_float(x) do
+    [[x]]
+  end
+
+  def matrix(x) when is_list(x) do
+    if List.flatten(x) == x do
+      [x]
+    else
+      x
+    end
+  end
 end
