@@ -4,6 +4,10 @@ defmodule Matrix do
     |> Enum.map(&sum_tuple_of_vectors/1)
   end
 
+  def subtract(a, b) do
+    add(a, Matrix.negate(b))
+  end
+
   defp sum_tuple_of_vectors({a, b}) do
     Enum.zip(a, b)
     |> Enum.map(&sum_tuple/1)
@@ -29,6 +33,22 @@ defmodule Matrix do
     |> Enum.sum()
   end
 
+  def negate(x) do
+    for row <- x do
+      for element <- row do
+        -element
+      end
+    end
+  end
+
+  def divide_each(m, d) do
+    for row <- m do
+      for element <- row do
+        element / d
+      end
+    end
+  end
+
   def transpose(x) do
     List.zip(x)
     |> Enum.map(&Tuple.to_list(&1))
@@ -43,6 +63,38 @@ defmodule Matrix do
       [x]
     else
       x
+    end
+  end
+
+  def column(x) when is_list(x) do
+    Matrix.transpose([x])
+  end
+
+  def diagonal(x) when is_list(x) do
+    m = length(x)
+
+    for ir <- 0..(m - 1) do
+      for ic <- 0..(m - 1) do
+        if ic == ir, do: Enum.at(x, ic), else: 0.0
+      end
+    end
+  end
+
+  def random(m, n) do
+    _ = :rand.seed(:exs1024, {1, 123_534, 345_345})
+
+    for _m <- 1..m do
+      for _n <- 1..n do
+        :rand.uniform()
+      end
+    end
+  end
+
+  def zeros(m, n) do
+    for _m <- 1..m do
+      for _n <- 1..n do
+        0
+      end
     end
   end
 end

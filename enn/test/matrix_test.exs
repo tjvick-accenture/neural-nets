@@ -28,6 +28,12 @@ defmodule MatrixTest do
     end
   end
 
+  describe "Matrix.subtract/2" do
+    test "subtracts [1x1] and [1x1]" do
+      assert Matrix.subtract([[1]], [[0.5]]) === [[0.5]]
+    end
+  end
+
   describe "Matrix.multiply/2" do
     test "performs multiplication of [1x1] with [1x1]" do
       assert Matrix.multiply([[1]], [[1]]) == [[1]]
@@ -173,6 +179,20 @@ defmodule MatrixTest do
     end
   end
 
+  describe "Matrix.divide_each/2" do
+    test "Divides each element of a 1x1 by divisor" do
+      assert Matrix.divide_each([[6.0]], 2.0) == [[3.0]]
+    end
+
+    test "Divides each element of a 1x2 by divisor" do
+      assert Matrix.divide_each([[6.0, 7.0]], 2.0) == [[3.0, 3.5]]
+    end
+
+    test "Divides each element of a 2x2 by divisor" do
+      assert Matrix.divide_each([[4.0, 5.0], [6.0, 7.0]], 2.0) == [[2.0, 2.5], [3.0, 3.5]]
+    end
+  end
+
   describe "Matrix.matrix/1" do
     test "Converts a single integer to a matrix" do
       assert Matrix.matrix(1) == [[1]]
@@ -189,6 +209,84 @@ defmodule MatrixTest do
     test "Does not modify a list of lists" do
       a = [[1, 2, 3], [4, 5, 6]]
       assert Matrix.matrix(a) === a
+    end
+  end
+
+  describe "Matrix.negate/1" do
+    test "makes single positive value negative" do
+      assert Matrix.negate([[1.0]]) === [[-1.0]]
+    end
+
+    test "makes single negative value positive" do
+      assert Matrix.negate([[-1.0]]) === [[1.0]]
+    end
+
+    test "makes multiple positive values negative" do
+      assert Matrix.negate([[1.0, 2.0], [3.0, 4.0]]) === [[-1.0, -2.0], [-3.0, -4.0]]
+    end
+
+    test "makes multiple negative values positive" do
+      m = [[1.0, 2.0], [3.0, 4.0]]
+      assert Matrix.negate(Matrix.negate(m)) === m
+    end
+  end
+
+  describe "Matrix.column/1" do
+    test "converts list to column matrix" do
+      assert Matrix.column([0.0, 1.1, 2.2]) === [
+               [0.0],
+               [1.1],
+               [2.2]
+             ]
+    end
+  end
+
+  describe "Matrix.diagonal/1" do
+    test "converts list to matrix with values on the diagonal" do
+      assert Matrix.diagonal([0.1, 2.3, 4.5]) == [
+               [0.1, 0.0, 0.0],
+               [0.0, 2.3, 0.0],
+               [0.0, 0.0, 4.5]
+             ]
+    end
+  end
+
+  describe "Matrix.random/2" do
+    test "generates a 1x1 matrix of a float between 0.0 and 1.0" do
+      [[a]] = Matrix.random(1, 1)
+      assert a <= 1.0 and a >= 0.0
+    end
+
+    test "generates a 1x2 matrix using random values" do
+      [[a, b]] = Matrix.random(1, 2)
+      assert a <= 1.0 and a >= 0.0
+      assert b <= 1.0 and b >= 0.0
+      assert a != b
+    end
+
+    test "generates a 3x5 matrix" do
+      a = Matrix.random(3, 5)
+      assert length(a) == 3
+      assert length(hd(a)) == 5
+    end
+  end
+
+  describe "Matrix.zeros/2" do
+    test "generates a 1x1 matrix of 0.0s" do
+      [[a]] = Matrix.zeros(1, 1)
+      assert a == 0.0
+    end
+
+    test "generates a 1x2 matrix of 0.0s" do
+      [[a, b]] = Matrix.zeros(1, 2)
+      assert a == 0.0
+      assert b == 0.0
+    end
+
+    test "generates a 5x3 matrix of 0.0s" do
+      x = Matrix.zeros(5, 3)
+      assert length(x) == 5
+      assert length(hd(x)) == 3
     end
   end
 end

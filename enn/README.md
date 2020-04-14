@@ -1,21 +1,20 @@
-# ENN
+# ENN - Elixir Neural Network
 
-**TODO: Add description**
+## TODO
+- ~~Single feedforward neuron~~
+- ~~Single feedforward layer of neurons (multi-input, multi-output)~~
+- Single-layer backpropagation
+- 2-layer feedforward network
+- 2-layer backpropagation
+- Train function (given input-output pairs)
+- Test function (compare actual to target values)
+- MNIST
+- Options & Network parameterization
 
-## Installation
+Future:
+- Sparse networks
+- Convolution
+- Anything cool we can do with Elixir?
+- Performance limits w/ regard to network size, train speed
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `enn` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:enn, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/enn](https://hexdocs.pm/enn).
 

@@ -1,0 +1,6 @@
+%{
+  "excheck": {:hex, :excheck, "0.6.0", "f8595a8ac2c0abc0d060c1a4fce7d26f41574543366a52d5f3c84de30a69747b", [:mix], [], "hexpm", "50a94eb60e79c886be425af6b6f09c8055556ff8ad00e474dba72172574b8d28"},
+  "exprintf": {:hex, :exprintf, "0.2.1", "b7e895dfb00520cfb7fc1671303b63b37dc3897c59be7cbf1ae62f766a8a0314", [:mix], [], "hexpm", "20a0e8c880be90e56a77fcc82533c5d60c643915c7ce0cc8aa1e06ed6001da28"},
+  "exprof": {:hex, :exprof, "0.2.3", "8d4d657d73fc0c9ef1e30b2f9207b26ccbd2aec2baf1ca43f0b6d244c841c9f8", [:mix], [{:exprintf, "~> 0.2", [hex: :exprintf, repo: "hexpm", optional: false]}], "hexpm", "040410c672e2403908f578fb1e203a178692bbcd61b11d3745912662532b1dad"},
+  "triq": {:git, "https://github.com/krestenkrab/triq.git", "c7306b8eaea133d52140cb828817efb5e50a3d52", []},
+}
