@@ -78,9 +78,9 @@ class TestLayerCalculateUpdate:
 
         # output = relu(weights * input) = [0, 6, 12]
         # dA_dZ  = relu_gradient(output) = diag([0, 1, 1])
-        # dZ_dW  = input
-        # dC_dW  = T(dA_dZ) * T(dC_dA) * T(dZ_dW)
-        #        = diag([0 1 1]) * [0.25 0.5 1]T * [1 2 3]
+        # dZ_dW  = input = [1 2 3]
+        # dC_dW  = T(dZ_dW * dC_dA * dA_dW)
+        #        = T([1 2 3] * [0.25 0.5 1] * diag([0 1 1]))
 
         # ASSERT
         expected_weight_change = -np.array([
@@ -90,3 +90,34 @@ class TestLayerCalculateUpdate:
         ])
 
         np.testing.assert_array_equal(layer.weight_change, expected_weight_change)
+
+    def test_calculates_gradient_wrt_inputs(self):
+        # ARRANGE
+        layer = Layer(ActivationRectifiedLinearUnit())
+        layer.bias = column([0, 0, 0])
+        layer.weights = np.array([
+            [-1, -1, -1],
+            [1, 1.2, 1.5],
+            [2, 2.5, 3]
+        ])
+
+        # ACT
+        input_vector = column([1, 2, 3])
+        layer.run(input_vector)
+
+        dC_dA = np.array([[0.25, 0.5, 1]])
+        gradient_wrt_input = layer.calculate_update(dC_dA, 1)
+
+        # output = relu(weights * input) = [0, 6, 12]
+        # dA_dZ  = relu_gradient(output) = diag([0, 1, 1])
+        # dZ_dX  = weights
+        # dC_dX  = dC_dA * dA_dZ * dZ_dX)
+        #        = [0.25 0.5 1] * diag([0 1 1])) * weights
+        #        = [0 0.5 1] * weights
+
+        # ASSERT
+        expected_gradient_wrt_input = np.array([
+            [2.5, 3.1, 3.75]
+        ])
+
+        np.testing.assert_array_equal(gradient_wrt_input, expected_gradient_wrt_input)

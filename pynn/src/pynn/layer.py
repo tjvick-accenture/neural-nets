@@ -1,6 +1,17 @@
 import numpy as np
 
 
+def compute_gradients(dC_dA, dA_dZ, dZ_dW, dZ_dX):
+    dC_dZ = np.matmul(dC_dA, dA_dZ)
+
+    dC_dW_transpose = np.matmul(dZ_dW, dC_dZ)
+    dC_dW = np.transpose(dC_dW_transpose)
+
+    dC_dX = np.matmul(dC_dZ, dZ_dX)
+
+    return dC_dW, dC_dX
+
+
 class Layer:
     def __init__(self, activation):
         self.weights = []  # random
@@ -24,25 +35,14 @@ class Layer:
     def calculate_update(self, dC_dA, learning_rate):
         dA_dZ = self.activation.gradient_wrt_activation_input(self.recent_output)
         dZ_dW = self.recent_input
-        dC_dW = self.compute_gradient_dW(dC_dA, dA_dZ, dZ_dW)
+        dZ_dX = self.weights
+
+        dC_dW, dC_dX = compute_gradients(dC_dA, dA_dZ, dZ_dW, dZ_dX)
 
         weight_change = -learning_rate * dC_dW
         self.weight_change = weight_change
 
-        dZ_dA = self.weights
-        return self.compute_gradient_dA(dC_dA, dA_dZ, dZ_dA)
-
-    # static
-    def compute_gradient_dW(self, dC_dA, dA_dZ, dZ_dW):
-        dC_dZ = np.matmul(
-            np.transpose(dA_dZ),
-            np.transpose(dC_dA)
-        )
-        return np.matmul(dC_dZ, np.transpose(dZ_dW))
-
-    # static
-    def compute_gradient_dA(self, dC_dA, dA_dZ, dZ_dA):
-        return []
+        return dC_dX
 
     def apply_update(self):
         self.weights += self.weight_change
