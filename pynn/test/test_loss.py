@@ -1,9 +1,5 @@
-import numpy as np
 from src.pynn.loss import *
-
-
-def column(v):
-    return np.array(v).reshape(len(v), 1)
+from test.utils import column
 
 
 class TestLossAbsoluteError:
@@ -14,7 +10,7 @@ class TestLossAbsoluteError:
         target_vector = column([1, 1, 1])
         result = loss_function.gradient_wrt_output(output_vector, target_vector)
 
-        # signum(o_i - t_i)
+        # sign(o_i - t_i)
         expected = column([-1, 0, 1])
 
         np.testing.assert_array_equal(result, expected)
@@ -46,6 +42,6 @@ class TestLossCategoricalCrossEntropy:
         # division by zero cases:
         # target  = 0, output = 0  -> derivative = 0
         # target != 0, output = 0  -> derivative = 1e100 (might want something else eventually)
-        expected = column([0, -1e100, -1, -1/3, 0])
+        expected = column([0, -1e100, -1, -1 / 3, 0])
 
         np.testing.assert_array_equal(result, expected)

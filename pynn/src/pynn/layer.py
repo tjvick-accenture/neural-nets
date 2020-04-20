@@ -17,13 +17,13 @@ class Layer:
         activation_input = np.matmul(weights_with_bias, input_vector_with_constant)
         activation_output = self.activation.apply_to_column(activation_input)
 
-        # self.recent_input = input_vector
-        # self.recent_output = activation_output
+        self.recent_input = input_vector
+        self.recent_output = activation_output
         return activation_output
 
     def calculate_update(self, dC_dA, learning_rate):
         dA_dZ = self.activation.gradient_wrt_activation_input(self.recent_output)
-        dZ_dW = self.weights
+        dZ_dW = self.recent_input
         dC_dW = self.compute_gradient_dW(dC_dA, dA_dZ, dZ_dW)
 
         weight_change = -learning_rate * dC_dW
@@ -34,7 +34,11 @@ class Layer:
 
     # static
     def compute_gradient_dW(self, dC_dA, dA_dZ, dZ_dW):
-        return []
+        dC_dZ = np.matmul(
+            np.transpose(dA_dZ),
+            np.transpose(dC_dA)
+        )
+        return np.matmul(dC_dZ, np.transpose(dZ_dW))
 
     # static
     def compute_gradient_dA(self, dC_dA, dA_dZ, dZ_dA):
