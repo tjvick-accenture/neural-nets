@@ -156,7 +156,6 @@ defmodule ActivationTest do
     end
 
     test "applies softmax to whole column when softmax is specified" do
-      e = 2.71828182846
       x = [0, 1, 1] |> Matrix.column()
       output = Activation.apply_activation_function_to_column(x, :softmax)
 
@@ -165,6 +164,46 @@ defmodule ActivationTest do
         |> Matrix.column()
 
       assert output == expected_output
+    end
+  end
+
+  describe "derivative_of_output_wrt_input/2" do
+    test "returns activation function derivative along the diagonal for a relu" do
+      activation_output = [-1, 0, 1, 2] |> Matrix.column()
+      a_z = Activation.derivative_of_output_wrt_input(activation_output, :relu)
+
+      assert a_z == [
+               [0, 0, 0, 0],
+               [0, 0, 0, 0],
+               [0, 0, 1, 0],
+               [0, 0, 0, 1]
+             ]
+    end
+
+    test "returns activation function derivative along the diagonal for a logistic" do
+      [a, b, c, d] = [0.1, 0.3, 0.5, 1]
+      activation_output = [a, b, c, d] |> Matrix.column()
+      a_z = Activation.derivative_of_output_wrt_input(activation_output, :logistic)
+
+      assert a_z == [
+               [a * (1 - a), 0.0, 0.0, 0.0],
+               [0.0, b * (1 - b), 0.0, 0.0],
+               [0.0, 0.0, c * (1 - c), 0.0],
+               [0.0, 0.0, 0.0, d * (1 - d)]
+             ]
+    end
+
+    test "returns activation function derivative matrix for softmax" do
+      [a, b, c, d] = [0.1, 0.3, 0.5, 1]
+      activation_output = [a, b, c, d] |> Matrix.column()
+      a_z = Activation.derivative_of_output_wrt_input(activation_output, :softmax)
+
+      assert a_z == [
+               [a * (1 - a), -a * b, -a * c, -a * d],
+               [-b * a, b * (1 - b), -b * c, -b * d],
+               [-c * a, -c * b, c * (1 - c), -c * d],
+               [-d * a, -d * b, -d * c, d * (1 - d)]
+             ]
     end
   end
 end

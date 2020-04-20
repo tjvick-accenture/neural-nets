@@ -11,25 +11,6 @@ defmodule ENN do
     input
   end
 
-  def d_activation_output_wrt_activation_input(activation_output, :softmax) do
-    a = hd(Matrix.transpose(activation_output))
-    n = length(a)
-
-    for ir <- 0..(n - 1) do
-      for ic <- 0..(n - 1) do
-        a_i = Enum.at(a, ir)
-        a_j = Enum.at(a, ic)
-        if ir == ic, do: a_i * (1 - a_i), else: -a_i * a_j
-      end
-    end
-  end
-
-  def d_activation_output_wrt_activation_input(activation_output, activation_id) do
-    activation_output
-    |> Enum.map(fn [y] -> Activation.derivative_from_output(activation_id).(y) end)
-    |> Matrix.diagonal()
-  end
-
   def d_loss_wrt_activation_output(activation_output, target_output, :absolute_error) do
     [y] = Matrix.transpose(activation_output)
     [t] = Matrix.transpose(target_output)
@@ -83,88 +64,44 @@ defmodule ENN do
     end
   end
 
-  defp cost_gradient_function_L2(activation_derivative, input, output, target) do
-    error = output - target
-    activation_derivative * input * error
+  defp loss_gradient_chain_rule(
+         loss_wrt_output,
+         output_wrt_activation_input,
+         activation_input_wrt_layer_input
+       ) do
+    Matrix.transpose(output_wrt_activation_input)
+    |> Matrix.multiply(Matrix.transpose(loss_wrt_output))
+    #    |> Matrix.multiply([[1]])  # truly a desired change in cost # Could put learning rate here instead
+    |> Matrix.multiply(Matrix.transpose(activation_input_wrt_layer_input))
   end
 
-  defp cost_gradient_function_L1(activation_derivative, input, output, target) do
-    error = output - target
-    slope = if error < 0, do: -1.0, else: 1.0
-    activation_derivative * input * slope
-  end
+  defp compute_weight_change(input, output, target, activation_id, loss_id) do
+    # This could be rolled into the loss_gradient_chain_rule
+    learning_rate = 0.2
 
-  defp cost_gradient_function_CECL(activation_derivative, input, output, target) do
-    activation_derivative * input * target / output * -1.0
+    # Calculate gradient vector of loss wrt activation output
+    l_a = d_loss_wrt_activation_output(output, target, loss_id)
+
+    # Calculate gradient matrix of activation output wrt activation input
+    a_z = Activation.derivative_of_output_wrt_input(output, activation_id)
+
+    # Calculate gradient vector of activation input wrt weights (== input vector when fully connected)
+    z_w = d_activation_input_wrt_weights(input)
+
+    # Calculate gradient matrix of loss wrt weights by applying chain rule
+    l_w = loss_gradient_chain_rule(l_a, a_z, z_w)
+
+    # Calculate delta W using learning rate
+    l_w |> Matrix.multiply_each(-learning_rate)
   end
 
   def backpropagate_once(input, weights, bias, target, activation_id, loss_id) do
     output = neuron_layer_output(input, weights, bias, activation_id)
 
-    # 1. Calculate gradient vector of LOSS wrt activation output as function of TARGET vector and OUTPUT vector
-    #    L_A = loss_wrt_activation_output(output, target)
-    l_a = d_loss_wrt_activation_output(output, target, loss_id)
+    delta_w = compute_weight_change(input, output, target, activation_id, loss_id)
 
-    # 2. Calculate gradient matrix of ACTIVATION output wrt activation input as function of OUTPUT vector
-    #    A_Z = activation_output_wrt_activation_input(output)
-    a_z = d_activation_output_wrt_activation_input(output, activation_id)
-
-    # 3. Assume fully-connected weights matrix (:: gradient matrix of activation input wrt weights == INPUT vector)
-    #    Z_W = activation_input_wrt_weights(input)
-    z_w = d_activation_input_wrt_weights(input)
-
-    # 4. Calculate gradient matrix of loss wrt weights from 1-3
-    #    loss_wrt_weights = gradient_chain_rule(C_A, A_Z, Z_W)
-    l_w =
-      Matrix.transpose(a_z)
-      |> Matrix.multiply(Matrix.transpose(l_a))
-      |> Matrix.multiply([[-0.03]])
-      |> Matrix.multiply(Matrix.transpose(z_w))
-
-    # 5. Calculate delta W using LEARNING RATE
-    #    delta_w = loss_wrt_weights |> Matrix.multiply_each(learning_Rate)
-    delta_w = l_w
-
-    # 6. Apply weight change to WEIGHTS matrix (Or accumulate weight change)
     Matrix.add(weights, delta_w)
-
-    #    for {weights_row, [output_value], [target_value]} <- Enum.zip([weights, output, target]) do
-    #      backpropagate_for_single_output_neuron(
-    #        weights_row,
-    #        output_value,
-    #        target_value,
-    #        input,
-    #        activation_id
-    #      )
-    #    end
   end
-
-  #  def backpropagate_for_single_output_neuron(
-  #        weights_row,
-  #        output_value,
-  #        target_value,
-  #        input,
-  #        activation_id \\ :logistic
-  #      ) do
-  #    for {weight, [input_value]} <- Enum.zip(weights_row, input) do
-  #      apply_weight_change(weight, input_value, output_value, target_value, activation_id)
-  #    end
-  #  end
-
-  #  def apply_weight_change(weight, input, output, target, activation_id \\ :logistic) do
-  #    weight + calculate_weight_change(input, output, target, activation_id)
-  #  end
-
-  #  def calculate_weight_change(input, output, target, activation_id \\ :logistic) do
-  #    learning_rate = 0.1
-  #    activation_derivative_function = Activation.derivative_from_output(activation_id)
-  #    activation_derivative_value = activation_derivative_function.(output)
-  #
-  #    cost_derivative_wrt_weight =
-  #      cost_gradient_function_CECL(activation_derivative_value, input, output, target)
-  #
-  #    -1.0 * learning_rate * cost_derivative_wrt_weight
-  #  end
 
   def train(input_vectors, target_vectors, n_cycles, activation_id, loss_id) do
     m = length(hd(target_vectors))

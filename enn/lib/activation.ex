@@ -7,33 +7,33 @@ defmodule Activation do
     end
   end
 
-  def step_function(x) when x >= 0 do
-    1.0
-  end
-
-  def step_function(_x) do
-    0.0
-  end
-
-  def logistic_function(x) when 40 < x do
-    1.0
-  end
-
-  def logistic_function(x) when -40 > x do
-    0.0
+  def step_function(x) do
+    if x >= 0, do: 1.0, else: 0.0
   end
 
   def logistic_function(x) do
-    1 / (1 + :math.exp(-x))
-  end
-
-  def relu_function(x) when x <= 0 do
-    0.0
+    cond do
+      x < -40 -> 0.0
+      40 < x -> 1.0
+      true -> 1 / (1 + :math.exp(-x))
+    end
   end
 
   def relu_function(x) do
-    x
+    if x <=0, do: 0.0, else: x
   end
+
+
+  def apply_activation_function_to_column(x, :softmax) do
+    [row_vector] = Matrix.transpose(x)
+    exp_sum = Enum.reduce(row_vector, 0, fn element, acc -> acc + :math.exp(element) end)
+    Enum.map(row_vector, fn element -> :math.exp(element) / exp_sum end) |> Matrix.column()
+  end
+
+  def apply_activation_function_to_column(x, activation_function_id) do
+    apply_function_to_column(x, Activation.function(activation_function_id))
+  end
+
 
   def derivative_from_output(a) do
     case a do
@@ -46,24 +46,33 @@ defmodule Activation do
     y * (1.0 - y)
   end
 
-  def relu_derivative_from_output(y) when y <= 0 do
-    0.0
+  def relu_derivative_from_output(y) do
+    if y <= 0, do: 0.0, else: 1.0
   end
 
-  def relu_derivative_from_output(_y) do
-    1.0
+
+  def derivative_of_output_wrt_input(activation_output, :softmax) do
+    a = hd(Matrix.transpose(activation_output))
+    n = length(a)
+
+    for ir <- 0..(n - 1) do
+      for ic <- 0..(n - 1) do
+        a_i = Enum.at(a, ir)
+        a_j = Enum.at(a, ic)
+        if ir == ic, do: a_i * (1 - a_i), else: -a_i * a_j
+      end
+    end
   end
 
-  def apply_activation_function_to_column(x, activation_function_id \\ :logistic)
-
-  def apply_activation_function_to_column(x, activation_function_id)
-      when activation_function_id == :softmax do
-    [row_vector] = Matrix.transpose(x)
-    exp_sum = Enum.reduce(row_vector, 0, fn element, acc -> acc + :math.exp(element) end)
-    Enum.map(row_vector, fn element -> :math.exp(element) / exp_sum end) |> Matrix.column()
+  def derivative_of_output_wrt_input(activation_output, activation_id) do
+    activation_output
+    |> apply_function_to_column(Activation.derivative_from_output(activation_id))
+    |> List.flatten()
+    |> Matrix.diagonal()
   end
 
-  def apply_activation_function_to_column(x, activation_function_id) do
-    Enum.map(x, fn [z] -> [Activation.function(activation_function_id).(z)] end)
+
+  defp apply_function_to_column(x, function) do
+    Enum.map(x, fn [z] -> [function.(z)] end)
   end
 end

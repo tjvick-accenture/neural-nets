@@ -179,6 +179,20 @@ defmodule MatrixTest do
     end
   end
 
+  describe "Matrix.multiply_each/2" do
+    test "Multiplies each element of a 1x1 by scalar" do
+      assert Matrix.multiply_each([[3.0]], 2.0) == [[6.0]]
+    end
+
+    test "Multiplies each element of a 1x2 by scalar" do
+      assert Matrix.multiply_each([[3.0, 3.5]], 2.0) == [[6.0, 7.0]]
+    end
+
+    test "Multiplies each element of a 2x2 by scalar" do
+      assert Matrix.multiply_each([[2.0, 3.0], [4.0, 5.0]], 2.0) == [[4.0, 6.0], [8.0, 10.0]]
+    end
+  end
+
   describe "Matrix.divide_each/2" do
     test "Divides each element of a 1x1 by divisor" do
       assert Matrix.divide_each([[6.0]], 2.0) == [[3.0]]

@@ -41,6 +41,14 @@ defmodule Matrix do
     end
   end
 
+  def multiply_each(m, s) do
+    for row <- m do
+      for element <- row do
+        element * s
+      end
+    end
+  end
+
   def divide_each(m, d) do
     for row <- m do
       for element <- row do

@@ -84,6 +84,8 @@ defmodule ENNTest do
   end
 
   describe "backpropagate_once/6" do
+    Logger.debug("*** BACKPROP ONCE ***")
+
     def compute_cost(output, target) do
       [[o1], [o2]] = output
       [[t1], [t2]] = target
@@ -101,11 +103,17 @@ defmodule ENNTest do
       target = [1.0, 0.0] |> Matrix.column()
 
       output = ENN.neuron_layer_output(input, weights, bias, :relu)
+      Logger.debug(inspect(output))
       cost = compute_cost(output, target)
 
-      new_weights = ENN.backpropagate_once(input, weights, bias, target, :relu, :absolute_error)
+      new_weights = ENN.backpropagate_once(input, weights, bias, target, :relu, :squared_error)
+
+      Logger.debug(inspect(new_weights))
+      Logger.debug(inspect(new_weights |> Matrix.subtract(weights)))
 
       new_output = ENN.neuron_layer_output(input, new_weights, bias, :relu)
+      Logger.debug(inspect(new_output))
+
       new_cost = compute_cost(new_output, target)
 
       assert new_cost < cost
@@ -137,46 +145,6 @@ defmodule ENNTest do
       input = [-1, 0, 1, 2] |> Matrix.column()
       z_w = ENN.d_activation_input_wrt_weights(input)
       assert z_w == input
-    end
-  end
-
-  describe "d_activation_output_wrt_activation_input/2" do
-    test "returns activation function derivative along the diagonal for a relu" do
-      activation_output = [-1, 0, 1, 2] |> Matrix.column()
-      a_z = ENN.d_activation_output_wrt_activation_input(activation_output, :relu)
-
-      assert a_z == [
-               [0, 0, 0, 0],
-               [0, 0, 0, 0],
-               [0, 0, 1, 0],
-               [0, 0, 0, 1]
-             ]
-    end
-
-    test "returns activation function derivative along the diagonal for a logistic" do
-      [a, b, c, d] = [0.1, 0.3, 0.5, 1]
-      activation_output = [a, b, c, d] |> Matrix.column()
-      a_z = ENN.d_activation_output_wrt_activation_input(activation_output, :logistic)
-
-      assert a_z == [
-               [a * (1 - a), 0.0, 0.0, 0.0],
-               [0.0, b * (1 - b), 0.0, 0.0],
-               [0.0, 0.0, c * (1 - c), 0.0],
-               [0.0, 0.0, 0.0, d * (1 - d)]
-             ]
-    end
-
-    test "returns activation function derivative matrix for softmax" do
-      [a, b, c, d] = [0.1, 0.3, 0.5, 1]
-      activation_output = [a, b, c, d] |> Matrix.column()
-      a_z = ENN.d_activation_output_wrt_activation_input(activation_output, :softmax)
-
-      assert a_z == [
-               [a * (1 - a), -a * b, -a * c, -a * d],
-               [-b * a, b * (1 - b), -b * c, -b * d],
-               [-c * a, -c * b, c * (1 - c), -c * d],
-               [-d * a, -d * b, -d * c, d * (1 - d)]
-             ]
     end
   end
 

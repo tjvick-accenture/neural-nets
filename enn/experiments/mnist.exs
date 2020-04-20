@@ -18,8 +18,10 @@ Logger.debug("Extracting testing target vectors...")
 testing_target_vectors = ExtractMNIST.extract_target_vectors_from_file(testing_labels_filename, n_samples)
 
 
-training_sequence = [0, 1, 5, 10]
+training_sequence = [0, 1, 5, 20, 100]
 for n_epochs <- training_sequence do
+  network_specs = {}
+
   Logger.debug("Training...")
   # in: network parameters
   # out: network (weights right now)
