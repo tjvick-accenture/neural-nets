@@ -59,7 +59,7 @@ class TestLayerRun:
 
 
 class TestLayerCalculateUpdate:
-    def test_calculates_gradient_wrt_weights(self):
+    def test_calculates_weight_change_using_gradient_wrt_weights(self):
         # ARRANGE
         layer = Layer(ActivationRectifiedLinearUnit())
         layer.bias = column([0, 0, 0])
@@ -80,7 +80,7 @@ class TestLayerCalculateUpdate:
         # dA_dZ  = relu_gradient(output) = diag([0, 1, 1])
         # dZ_dW  = input = [1 2 3]
         # dC_dW  = T(dZ_dW * dC_dA * dA_dW)
-        #        = T([1 2 3] * [0.25 0.5 1] * diag([0 1 1]))
+        #        = T([1 2 3]T * [0.25 0.5 1] * diag([0 1 1]))
 
         # ASSERT
         expected_weight_change = -np.array([
@@ -90,6 +90,29 @@ class TestLayerCalculateUpdate:
         ])
 
         np.testing.assert_array_equal(layer.weight_change, expected_weight_change)
+
+    def test_calculates_bias_change_using_gradient_wrt_bias(self):
+        # ARRANGE
+        layer = Layer(ActivationRectifiedLinearUnit())
+        layer.bias = column([-1, 1, 2])
+        layer.weights = np.array([
+            [-1, -1],
+            [1, 1],
+            [2, 2]
+        ])
+
+        # ACT
+        input_vector = column([2, 3])
+        layer.run(input_vector)
+
+        dC_dA = np.array([[0.25, 0.5, 1]])
+        layer.calculate_update(dC_dA, 1)
+
+        # ASSERT
+        # Same case as above test, just with bias instead of the first weights column
+        expected_bias_change = -column([0, 0.5, 1])
+
+        np.testing.assert_array_equal(layer.bias_change, expected_bias_change)
 
     def test_calculates_gradient_wrt_inputs(self):
         # ARRANGE
