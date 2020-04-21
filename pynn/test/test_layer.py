@@ -3,6 +3,7 @@ from src.pynn.activation import *
 from src.pynn.layer import *
 from test.utils import column
 
+
 class TestLayerRun:
     def test_zero_weights_and_bias_yield_zero_output(self):
         layer = Layer(ActivationRectifiedLinearUnit())
