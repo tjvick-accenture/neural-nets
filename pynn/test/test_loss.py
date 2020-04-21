@@ -29,7 +29,19 @@ class TestLossAbsoluteError:
 
 
 class TestLossSquaredError:
-    def test_loss_squared_error_calculation(self):
+    def test_calculation_of_squared_error_loss(self):
+        loss_function = LossSquaredError
+
+        output_vector = column([0, 1, 4])
+        target_vector = column([1, 1, 1])
+
+        result = loss_function.evaluate_loss(output_vector, target_vector)
+
+        expected = 5
+
+        assert result == expected
+
+    def test_calculation_of_gradient_wrt_output(self):
         loss_function = LossSquaredError()
 
         output_vector = column([0, 1, 3])
