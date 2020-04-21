@@ -24,7 +24,7 @@ class LossSquaredError:
 class LossCategoricalCrossEntropy:
     @staticmethod
     def evaluate_loss(output_vector, target_vector):
-        return - target_vector * np.log(output_vector)
+        return np.nan_to_num(-sum(target_vector * np.log(output_vector)), posinf=1e100, neginf=-1e100)
 
     @staticmethod
     def gradient_wrt_output(output_vector, target_vector):
