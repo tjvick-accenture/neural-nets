@@ -1,12 +1,14 @@
 import numpy as np
+
 from pynn.activation import ActivationRectifiedLinearUnit
 from pynn.layer import Layer
 from pynn.loss import LossCategoricalCrossEntropy
 from pynn.network import Network
+from pynn.trainer import Trainer
 from test.utils import column
 
 
-class TestNetworkBackpropagation:
+class TestTrainer:
     def test_single_backprop_step_for_single_input_target_pair(self):
         # ARRANGE
         layer = Layer(ActivationRectifiedLinearUnit())
@@ -15,20 +17,19 @@ class TestNetworkBackpropagation:
         network = Network()
         network.add(layer)
 
-        # ACT
+        loss = LossCategoricalCrossEntropy
+        trainer = Trainer(network, loss)
+
         input_vector = column([0.2, 0.4, 0.8])
         target_vector = column([1, 0, 0])
-        output_vector = network.run(input_vector)
+        output_vector_0 = network.run(input_vector)
+        cost_0 = loss.evaluate_loss(output_vector_0, target_vector)
 
-        loss = LossCategoricalCrossEntropy
-        cost = loss.evaluate_loss(output_vector, target_vector)
-        dC_dA = loss.gradient_wrt_output(output_vector, target_vector)
-
-        network.calculate_update(dC_dA, 0.001)
-        network.apply_update()
+        # ACT
+        trainer.train([input_vector], [target_vector], 0.001)
 
         # ASSERT
-        new_output_vector = network.run(input_vector)
-        new_cost = loss.evaluate_loss(new_output_vector, target_vector)
+        output_vector_1 = network.run(input_vector)
+        cost_1 = loss.evaluate_loss(output_vector_1, target_vector)
 
-        assert new_cost < cost
+        assert cost_1 < cost_0
