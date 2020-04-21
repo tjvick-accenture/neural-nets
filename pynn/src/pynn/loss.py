@@ -3,6 +3,10 @@ import numpy as np
 
 class LossAbsoluteError:
     @staticmethod
+    def evaluate_loss(output_vector, target_vector):
+        return output_vector - target_vector
+
+    @staticmethod
     def gradient_wrt_output(output_vector, target_vector):
         return np.sign(output_vector - target_vector)
 

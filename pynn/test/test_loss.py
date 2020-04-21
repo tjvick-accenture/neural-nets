@@ -3,7 +3,19 @@ from test.utils import column
 
 
 class TestLossAbsoluteError:
-    def test_loss_absolute_error_calculation(self):
+    def test_calculation_of_absolute_error_loss(self):
+        loss_function = LossAbsoluteError
+
+        output_vector = column([0, 1, 2])
+        target_vector = column([1, 1, 1])
+
+        result = loss_function.evaluate_loss(output_vector, target_vector)
+
+        expected = column([-1, 0, 1])
+
+        np.testing.assert_array_equal(result, expected)
+
+    def test_calculation_of_gradient_wrt_output(self):
         loss_function = LossAbsoluteError()
 
         output_vector = column([0, 1, 2])
