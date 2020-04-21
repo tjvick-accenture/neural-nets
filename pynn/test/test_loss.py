@@ -37,9 +37,9 @@ class TestLossSquaredError:
 
         result = loss_function.evaluate_loss(output_vector, target_vector)
 
-        expected = column([0.5, 0, 4.5])
+        expected = 5
 
-        np.testing.assert_array_equal(result, expected)
+        assert result == expected
 
     def test_calculation_of_gradient_wrt_output(self):
         loss_function = LossSquaredError()
