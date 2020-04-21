@@ -1,8 +1,8 @@
 import numpy as np
 
-from pynn.activation import ActivationRectifiedLinearUnit, ActivationSoftmax
+from pynn.activation import ActivationRectifiedLinearUnit
 from pynn.layer import Layer
-from pynn.loss import LossCategoricalCrossEntropy, LossSquaredError, LossAbsoluteError
+from pynn.loss import LossAbsoluteError
 from pynn.network import Network
 from pynn.trainer import Trainer
 from test.utils import column
@@ -89,6 +89,8 @@ class TestTrainerReducesCost:
         assert epoch_cost_100 < epoch_cost_10
 
 
+# TODO consider moving this (and similar tests) out into a separate file -
+#  maybe a longer-running integration test group
 class TestTrainerConvergesToKnownSolution:
     def test_network_weights_and_bias_converge_to_solution(self):
         weights, bias, input_vectors, target_vectors = generate_training_data(10)
@@ -108,6 +110,56 @@ class TestTrainerConvergesToKnownSolution:
                 converged = True
 
         assert converged
+
+
+class TestTrainerReturnsCost:
+    def test_cost_is_computed_for_each_epoch_and_returned(self):
+        activation = ActivationRectifiedLinearUnit
+        loss = LossAbsoluteError
+        network, trainer = create_test_network_trainer(activation, loss)
+
+        n_pairs = 5
+        input_vectors = [np.random.rand(3, 1) for _ in range(n_pairs)]
+        target_vectors = [np.random.rand(3, 1) for _ in range(n_pairs)]
+
+        result_after_1 = trainer.train(input_vectors, target_vectors, 0.01, 1, cost_frequency=1)
+        epoch_cost_1 = compute_epoch_cost(input_vectors, target_vectors, network, loss)
+        result_after_2 = trainer.train(input_vectors, target_vectors, 0.01, 1, cost_frequency=1)
+        epoch_cost_2 = compute_epoch_cost(input_vectors, target_vectors, network, loss)
+
+        assert result_after_1 == [epoch_cost_1]
+        assert result_after_2 == [epoch_cost_2]
+
+    def test_cost_is_computed_after_every_nth_epoch_and_returned(self):
+        activation = ActivationRectifiedLinearUnit
+        loss = LossAbsoluteError
+        network, trainer = create_test_network_trainer(activation, loss)
+
+        n_pairs = 5
+        input_vectors = [np.random.rand(3, 1) for _ in range(n_pairs)]
+        target_vectors = [np.random.rand(3, 1) for _ in range(n_pairs)]
+
+        result_after_10 = trainer.train(input_vectors, target_vectors, 0.01, 10, cost_frequency=10)
+        epoch_cost_10 = compute_epoch_cost(input_vectors, target_vectors, network, loss)
+        result_after_30 = trainer.train(input_vectors, target_vectors, 0.01, 20, cost_frequency=10)
+        epoch_cost_30 = compute_epoch_cost(input_vectors, target_vectors, network, loss)
+
+        assert result_after_10 == [epoch_cost_10]
+        assert len(result_after_30) == 2
+        assert result_after_30[-1] == [epoch_cost_30]
+
+    def test_cost_is_not_computed_when_cost_frequency_not_defined(self):
+        activation = ActivationRectifiedLinearUnit
+        loss = LossAbsoluteError
+        network, trainer = create_test_network_trainer(activation, loss)
+
+        n_pairs = 5
+        input_vectors = [np.random.rand(3, 1) for _ in range(n_pairs)]
+        target_vectors = [np.random.rand(3, 1) for _ in range(n_pairs)]
+
+        result_after_10 = trainer.train(input_vectors, target_vectors, 0.01, 10)
+
+        assert result_after_10 is None
 
 
 def create_test_network_trainer(activation, loss):
