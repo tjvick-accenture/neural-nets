@@ -11,7 +11,7 @@ class TestLossAbsoluteError:
 
         result = loss_function.evaluate_loss(output_vector, target_vector)
 
-        expected = 1
+        expected = 3
 
         assert result == expected
 
