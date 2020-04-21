@@ -55,7 +55,24 @@ class TestLossSquaredError:
 
 
 class TestLossCategoricalCrossEntropy:
-    def test_loss_categorical_crossentropy_calculation(self):
+    def test_calculation_of_categorical_cross_entropy_loss(self):
+        loss_function = LossCategoricalCrossEntropy
+
+        def run_assertion(a, b, expected):
+            output_vector = column(a)
+            target_vector = column(b)
+            result = loss_function.evaluate_loss(output_vector, target_vector)
+            assert result == expected
+
+        run_assertion([0.2, 0.3, 0.9], [0, 0, 1], -np.log(0.9))
+        run_assertion([0.2, 0.3, 0.9], [0, 1, 0], -np.log(0.3))
+        run_assertion([0.2, 0.3, 0.9], [0, 1, 1], -np.log(0.3)-np.log(0.9))
+        run_assertion([0.2, 0.3, 1.0], [0, 1, 1], -np.log(0.3))
+        run_assertion([0.2, 0.3, 0], [0, 0, 1], 1e100)
+        run_assertion([0.2, 0.3, 0], [0, 0, -1], -1e100)
+        run_assertion([0.2, 0.3, 0], [0, 0, 0], 0)
+
+    def test_calculation_of_gradient_wrt_output(self):
         loss_function = LossCategoricalCrossEntropy()
 
         output_vector = column([0, 0, 1, 3, 4])
