@@ -6,14 +6,14 @@ class TestLossAbsoluteError:
     def test_calculation_of_absolute_error_loss(self):
         loss_function = LossAbsoluteError
 
-        output_vector = column([0, 1, 2])
+        output_vector = column([0, 1, 3])
         target_vector = column([1, 1, 1])
 
         result = loss_function.evaluate_loss(output_vector, target_vector)
 
-        expected = column([-1, 0, 1])
+        expected = 1
 
-        np.testing.assert_array_equal(result, expected)
+        assert result == expected
 
     def test_calculation_of_gradient_wrt_output(self):
         loss_function = LossAbsoluteError()
